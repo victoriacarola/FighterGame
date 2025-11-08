@@ -5,136 +5,149 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
-    public float jumpForce = 5f;
-    private Rigidbody2D rb;
-    private Animator animator;
+    public float jumpForce = 15f;
 
-    [Header("Attack Settings")]
-    [SerializeField] private LayerMask enemyLayers;
+    [Header("Control Keys")]
+    public KeyCode leftKey, rightKey, jumpKey, attackKey;
+
+    [Header("Combat Settings")]
+    public int maxHealth = 100;
+    public int attackDamage = 10;
     public Transform attackPoint;
     public float attackRange = 0.5f;
-    public int attackDamage = 10;
-    public float attackRate = 2f;
-    private float nextAttackTime = 0f;
+    public LayerMask enemyLayers;
 
-    [Header("Health Settings")]
-    public Image healthBar;
-    private float currentHealth = 100f;
-    private float maxHealth = 100f;
+    [Header("UI References")]
+    public Slider healthBar;
+    public Image healthFill;
 
-    private void Start()
+    [Header("References")]
+    public Animator animator;
+
+    private Rigidbody2D rb;
+    private bool isGrounded = true;
+    private bool isDead = false;
+    private int currentHealth;
+    private Vector3 originalScale;
+
+    void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
+        originalScale = transform.localScale;
+        currentHealth = maxHealth;
+
+        if (healthBar != null)
+            healthBar.value = 1f;
     }
 
-    private void Update()
+    void Update()
     {
+        if (isDead) return;
+
         HandleMovement();
         HandleJump();
-        HandleAttack();
+
+        if (Input.GetKeyDown(attackKey))
+        {
+            animator.SetTrigger("Attack");
+            Debug.Log(gameObject.name + " - Attack Triggered");
+        }
     }
 
     void HandleMovement()
     {
-        float move = Input.GetAxis("Horizontal");
-        rb.velocity = new Vector2(move * moveSpeed, rb.velocity.y);
+        float move = 0;
+
+        if (Input.GetKey(leftKey)) move = -1;
+        else if (Input.GetKey(rightKey)) move = 1;
+
+        rb.linearVelocity = new Vector2(move * moveSpeed, rb.linearVelocity.y);
 
         if (move != 0)
-            animator.SetBool("isWalking", true);
+        {
+            animator.SetFloat("Speed", Mathf.Abs(move));
+            Vector3 newScale = originalScale;
+            newScale.x = Mathf.Abs(newScale.x) * Mathf.Sign(move);
+            transform.localScale = newScale;
+        }
         else
-            animator.SetBool("isWalking", false);
-
-        if (move > 0)
-            transform.localScale = new Vector3(1, 1, 1);
-        else if (move < 0)
-            transform.localScale = new Vector3(-1, 1, 1);
+        {
+            animator.SetFloat("Speed", 0);
+        }
     }
 
     void HandleJump()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(jumpKey) && isGrounded)
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            animator.SetTrigger("Jump");
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            isGrounded = false;
         }
     }
 
-    void HandleAttack()
+    // Triggered by Animation Event
+    public void PerformAttack()
     {
-        // Customize keys per character
-        if (gameObject.name.Contains("Soldier"))
-        {
-            if (Input.GetKeyDown(KeyCode.F) && Time.time >= nextAttackTime)
-            {
-                animator.SetTrigger("Attack");
-                Debug.Log("Soldier - Attack Triggered");
-                nextAttackTime = Time.time + 1f / attackRate;
-            }
-        }
-        else if (gameObject.name.Contains("Orc"))
-        {
-            if (Input.GetKeyDown(KeyCode.K) && Time.time >= nextAttackTime)
-            {
-                animator.SetTrigger("Attack");
-                Debug.Log("Orc - Attack Triggered");
-                nextAttackTime = Time.time + 1f / attackRate;
-            }
-        }
-    }
-
-    // Animation Event
-    public void OnAttackHit()
-    {
+        Debug.Log("PerformAttack called for: " + gameObject.name);
+        
+        // Detect enemies in range
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
-        foreach (Collider2D enemy in hitEnemies)
+        
+        // Damage them
+        foreach(Collider2D enemy in hitEnemies)
         {
-            Debug.Log($"{gameObject.name} hit {enemy.name}");
-            enemy.GetComponent<PlayerController>().TakeDamage(10);
+            if (enemy.gameObject != this.gameObject) // Don't hit yourself
+            {
+                Debug.Log("Hit: " + enemy.name);
+                enemy.GetComponent<PlayerController>()?.TakeDamage(attackDamage);
+            }
         }
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(int damage)
     {
+        if (isDead) return;
+
         currentHealth -= damage;
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        float healthPercent = (float)currentHealth / maxHealth;
+
+        if (healthBar != null)
+            healthBar.value = healthPercent;
+
+        if (healthFill != null)
+        {
+            if (healthPercent > 0.6f) healthFill.color = Color.green;
+            else if (healthPercent > 0.4f) healthFill.color = Color.yellow;
+            else healthFill.color = Color.red;
+        }
 
         animator.SetTrigger("Hurt");
-        UpdateHealthBar();
 
         if (currentHealth <= 0)
-        {
             Die();
-        }
-    }
-
-    void UpdateHealthBar()
-    {
-        if (healthBar != null)
-        {
-            float fill = currentHealth / maxHealth;
-            healthBar.fillAmount = fill;
-
-            if (fill > 0.6f)
-                healthBar.color = Color.green;
-            else if (fill > 0.4f)
-                healthBar.color = Color.yellow;
-            else
-                healthBar.color = Color.red;
-        }
     }
 
     void Die()
     {
+        isDead = true;
         animator.SetTrigger("Die");
-        Debug.Log(gameObject.name + " has died!");
+        rb.linearVelocity = Vector2.zero;
+        Invoke(nameof(DisablePlayer), 2f);
+    }
+
+    void DisablePlayer()
+    {
         this.enabled = false;
     }
 
-    private void OnDrawGizmosSelected()
+    void OnCollisionEnter2D(Collision2D collision)
     {
-        if (attackPoint == null)
-            return;
+        isGrounded = true;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
     }
