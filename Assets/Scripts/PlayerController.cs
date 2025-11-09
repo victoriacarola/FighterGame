@@ -3,26 +3,16 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float jumpForce = 15f;
-
-    [Header("Control Keys")]
     public KeyCode leftKey, rightKey, jumpKey, attackKey;
-
-    [Header("Combat Settings")]
-    public int maxHealth = 100;
-    public int attackDamage = 10;
-    public Transform attackPoint;
-    public float attackRange = 0.5f;
-    public LayerMask enemyLayers;
-
-    [Header("UI References")]
-    public Slider healthBar;
-    public Image healthFill;
-
-    [Header("References")]
     public Animator animator;
+    public Transform attackPoint;
+    public float attackRange = 1.5f;
+    public LayerMask enemyLayers;
+    public Slider healthBar;
+    public int maxHealth = 100;
+    public int attackDamage = 20;
 
     private Rigidbody2D rb;
     private bool isGrounded = true;
@@ -30,39 +20,32 @@ public class PlayerController : MonoBehaviour
     private int currentHealth;
     private Vector3 originalScale;
 
+    [Header("Victory Screen")]
+    public GameObject victoryScreen;
+    public UnityEngine.UI.Text victoryText;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         originalScale = transform.localScale;
         currentHealth = maxHealth;
-
-        if (healthBar != null)
-            healthBar.value = 1f;
+        if (healthBar != null) healthBar.value = 1f;
     }
 
     void Update()
     {
         if (isDead) return;
 
-        HandleMovement();
-        HandleJump();
+        // Ground check
+        isGrounded = transform.position.y <= 0.5f;
 
-        if (Input.GetKeyDown(attackKey))
-        {
-            animator.SetTrigger("Attack");
-            Debug.Log(gameObject.name + " - Attack Triggered");
-        }
-    }
-
-    void HandleMovement()
-    {
+        // Movement
         float move = 0;
-
         if (Input.GetKey(leftKey)) move = -1;
         else if (Input.GetKey(rightKey)) move = 1;
 
         rb.linearVelocity = new Vector2(move * moveSpeed, rb.linearVelocity.y);
-
+        
         if (move != 0)
         {
             animator.SetFloat("Speed", Mathf.Abs(move));
@@ -74,84 +57,78 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetFloat("Speed", 0);
         }
-    }
 
-    void HandleJump()
-    {
+        // Jump
         if (Input.GetKeyDown(jumpKey) && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            isGrounded = false;
+        }
+
+        // Attack - SIMPLE VERSION
+        if (Input.GetKeyDown(attackKey))
+        {
+            animator.SetTrigger("Attack");
+            Debug.Log(gameObject.name + " attacking!");
+            
+            // Immediate attack for testing
+            SimpleAttack();
         }
     }
 
-    public void PerformAttack()
-{
-    Debug.Log("PerformAttack called for: " + gameObject.name);
-    
-    if (attackPoint == null)
+    void SimpleAttack()
     {
-        Debug.LogError("AttackPoint is null!");
-        return;
-    }
-    
-    // Detect enemies in range
-    Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
-    Debug.Log("Found " + hitEnemies.Length + " enemies in range");
-    
-    // Damage them
-    foreach(Collider2D enemy in hitEnemies)
-    {
-        if (enemy.gameObject != this.gameObject)
+        if (attackPoint == null) return;
+        
+        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
+        Debug.Log(gameObject.name + " found " + hits.Length + " targets");
+        
+        foreach(Collider2D hit in hits)
         {
-            Debug.Log("Hit: " + enemy.name);
-            PlayerController enemyPC = enemy.GetComponent<PlayerController>();
-            if (enemyPC != null)
+            if (hit.gameObject != gameObject)
             {
-                enemyPC.TakeDamage(attackDamage);
-            }
-            else
-            {
-                Debug.Log("No PlayerController on: " + enemy.name);
+                PlayerController enemy = hit.GetComponent<PlayerController>();
+                if (enemy != null)
+                {
+                    Debug.Log(gameObject.name + " HIT " + hit.name + "!");
+                    enemy.TakeDamage(attackDamage);
+                }
             }
         }
     }
-}
 
     public void TakeDamage(int damage)
     {
-        if (isDead) return;
-
         currentHealth -= damage;
-        float healthPercent = (float)currentHealth / maxHealth;
-
+        Debug.Log(gameObject.name + " took " + damage + " damage! Health: " + currentHealth);
+        
         if (healthBar != null)
-            healthBar.value = healthPercent;
-
-        if (healthFill != null)
-        {
-            if (healthPercent > 0.6f) healthFill.color = Color.green;
-            else if (healthPercent > 0.4f) healthFill.color = Color.yellow;
-            else healthFill.color = Color.red;
-        }
-
+            healthBar.value = (float)currentHealth / maxHealth;
+            
         animator.SetTrigger("Hurt");
-
-        if (currentHealth <= 0)
-            Die();
+        
+        if (currentHealth <= 0) Die();
     }
 
     void Die()
     {
-        isDead = true;
-        animator.SetTrigger("Die");
-        rb.linearVelocity = Vector2.zero;
-        Invoke(nameof(DisablePlayer), 2f);
+    isDead = true;
+    animator.SetTrigger("Die");
+    Debug.Log(gameObject.name + " died!");
+    
+    // Show victory screen
+    ShowVictoryScreen();
     }
 
-    void DisablePlayer()
+    void ShowVictoryScreen()
     {
-        this.enabled = false;
+    if (victoryScreen != null && victoryText != null)
+    {
+        // Determine winner
+        string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";
+        victoryText.text = winnerName + " Wins!";
+        
+        victoryScreen.SetActive(true);
+    }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -159,10 +136,9 @@ public class PlayerController : MonoBehaviour
         isGrounded = true;
     }
 
-    void OnDrawGizmosSelected()
+    public void RestartGame()
     {
-        if (attackPoint == null) return;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    // Reload the current scene
+    UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 }
