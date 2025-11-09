@@ -85,24 +85,38 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Triggered by Animation Event
     public void PerformAttack()
+{
+    Debug.Log("PerformAttack called for: " + gameObject.name);
+    
+    if (attackPoint == null)
     {
-        Debug.Log("PerformAttack called for: " + gameObject.name);
-        
-        // Detect enemies in range
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
-        
-        // Damage them
-        foreach(Collider2D enemy in hitEnemies)
+        Debug.LogError("AttackPoint is null!");
+        return;
+    }
+    
+    // Detect enemies in range
+    Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
+    Debug.Log("Found " + hitEnemies.Length + " enemies in range");
+    
+    // Damage them
+    foreach(Collider2D enemy in hitEnemies)
+    {
+        if (enemy.gameObject != this.gameObject)
         {
-            if (enemy.gameObject != this.gameObject) // Don't hit yourself
+            Debug.Log("Hit: " + enemy.name);
+            PlayerController enemyPC = enemy.GetComponent<PlayerController>();
+            if (enemyPC != null)
             {
-                Debug.Log("Hit: " + enemy.name);
-                enemy.GetComponent<PlayerController>()?.TakeDamage(attackDamage);
+                enemyPC.TakeDamage(attackDamage);
+            }
+            else
+            {
+                Debug.Log("No PlayerController on: " + enemy.name);
             }
         }
     }
+}
 
     public void TakeDamage(int damage)
     {
