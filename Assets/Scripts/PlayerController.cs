@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
-    public float jumpForce = 15f;
+    public float jumpForce = 5f;
     public KeyCode leftKey, rightKey, jumpKey, attackKey;
     public Animator animator;
     public Transform attackPoint;
@@ -25,12 +25,23 @@ public class PlayerController : MonoBehaviour
     public UnityEngine.UI.Text victoryText;
 
     void Start()
+{
+    rb = GetComponent<Rigidbody2D>();
+    originalScale = transform.localScale;
+    currentHealth = maxHealth;
+    if (healthBar != null) healthBar.value = 1f;
+    
+    // Auto-connect restart button if not set up in inspector
+    GameObject restartBtn = GameObject.Find("RestartButton");
+    if (restartBtn != null)
     {
-        rb = GetComponent<Rigidbody2D>();
-        originalScale = transform.localScale;
-        currentHealth = maxHealth;
-        if (healthBar != null) healthBar.value = 1f;
+        Button btn = restartBtn.GetComponent<Button>();
+        if (btn != null)
+        {
+            btn.onClick.AddListener(RestartGame);
+        }
     }
+}
 
     void Update()
     {
@@ -108,33 +119,36 @@ public class PlayerController : MonoBehaviour
         
         if (currentHealth <= 0) Die();
     }
-
-    void Die()
-    {
-    isDead = true;
-    animator.SetTrigger("Die");
-    Debug.Log(gameObject.name + " died!");
-    
-    // Show victory screen
-    ShowVictoryScreen();
-    }
-
-    void ShowVictoryScreen()
-    {
-    if (victoryScreen != null && victoryText != null)
-    {
-        // Determine winner
-        string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";
-        victoryText.text = winnerName + " Wins!";
-        
-        victoryScreen.SetActive(true);
-    }
-    }
-
     void OnCollisionEnter2D(Collision2D collision)
     {
         isGrounded = true;
     }
+
+    void Die()
+{
+    if (isDead) return; // Prevent multiple death calls
+    
+    isDead = true;
+    animator.SetTrigger("Die");
+    Debug.Log(gameObject.name + " died!");
+    
+    // Debug GameManager
+    if (GameManager.instance == null)
+    {
+        Debug.LogError("GameManager instance is NULL!");
+        return;
+    }
+    
+    Debug.Log("GameManager found, calling ShowVictory...");
+    
+    // Tell GameManager who won
+    string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";
+    Debug.Log("Winner should be: " + winnerName);
+    
+    GameManager.instance.ShowVictory(winnerName);
+}
+
+    
 
     public void RestartGame()
     {
