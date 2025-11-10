@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     public float attackRange = 1.5f;
     public LayerMask enemyLayers;
     public Slider healthBar;
+    public Image healthFill; // Add this field for the fill color
     public int maxHealth = 100;
     public int attackDamage = 20;
 
@@ -25,23 +26,26 @@ public class PlayerController : MonoBehaviour
     public UnityEngine.UI.Text victoryText;
 
     void Start()
-{
-    rb = GetComponent<Rigidbody2D>();
-    originalScale = transform.localScale;
-    currentHealth = maxHealth;
-    if (healthBar != null) healthBar.value = 1f;
-    
-    // Auto-connect restart button if not set up in inspector
-    GameObject restartBtn = GameObject.Find("RestartButton");
-    if (restartBtn != null)
     {
-        Button btn = restartBtn.GetComponent<Button>();
-        if (btn != null)
+        rb = GetComponent<Rigidbody2D>();
+        originalScale = transform.localScale;
+        currentHealth = maxHealth;
+        if (healthBar != null) healthBar.value = 1f;
+        
+        // Set initial health bar color
+        UpdateHealthBarColor();
+        
+        // Auto-connect restart button if not set up in inspector
+        GameObject restartBtn = GameObject.Find("RestartButton");
+        if (restartBtn != null)
         {
-            btn.onClick.AddListener(RestartGame);
+            Button btn = restartBtn.GetComponent<Button>();
+            if (btn != null)
+            {
+                btn.onClick.AddListener(RestartGame);
+            }
         }
     }
-}
 
     void Update()
     {
@@ -114,45 +118,68 @@ public class PlayerController : MonoBehaviour
         
         if (healthBar != null)
             healthBar.value = (float)currentHealth / maxHealth;
+        
+        // Update health bar color
+        UpdateHealthBarColor();
             
         animator.SetTrigger("Hurt");
         
         if (currentHealth <= 0) Die();
     }
+
+    void UpdateHealthBarColor()
+    {
+        if (healthFill != null)
+        {
+            float healthPercent = (float)currentHealth / maxHealth;
+            
+            if (healthPercent >= 0.61f) 
+            {
+                healthFill.color = Color.green;
+            }
+            else if (healthPercent >= 0.31f) 
+            {
+                healthFill.color = Color.yellow;
+            }
+            else 
+            {
+                healthFill.color = Color.red;
+            }
+        }
+    }
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         isGrounded = true;
     }
 
     void Die()
-{
-    if (isDead) return; // Prevent multiple death calls
-    
-    isDead = true;
-    animator.SetTrigger("Die");
-    Debug.Log(gameObject.name + " died!");
-    
-    // Debug GameManager
-    if (GameManager.instance == null)
     {
-        Debug.LogError("GameManager instance is NULL!");
-        return;
+        if (isDead) return; // Prevent multiple death calls
+        
+        isDead = true;
+        animator.SetTrigger("Die");
+        Debug.Log(gameObject.name + " died!");
+        
+        // Debug GameManager
+        if (GameManager.instance == null)
+        {
+            Debug.LogError("GameManager instance is NULL!");
+            return;
+        }
+        
+        Debug.Log("GameManager found, calling ShowVictory...");
+        
+        // Tell GameManager who won
+        string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";
+        Debug.Log("Winner should be: " + winnerName);
+        
+        GameManager.instance.ShowVictory(winnerName);
     }
-    
-    Debug.Log("GameManager found, calling ShowVictory...");
-    
-    // Tell GameManager who won
-    string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";
-    Debug.Log("Winner should be: " + winnerName);
-    
-    GameManager.instance.ShowVictory(winnerName);
-}
-
-    
 
     public void RestartGame()
     {
-    // Reload the current scene
-    UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        // Reload the current scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 }

@@ -562,7 +562,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -273, y: 131}
+  m_AnchoredPosition: {x: -246, y: 171}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &481452878
@@ -652,7 +652,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -677,7 +677,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 5.7
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -702,7 +702,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: -0.02, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -931,7 +931,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 266, y: 131}
+  m_AnchoredPosition: {x: 246, y: 171}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &747893362
@@ -1011,7 +1011,7 @@ Transform:
   m_GameObject: {fileID: 823606977}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: -4.05, z: 0}
+  m_LocalPosition: {x: 0.07, y: -4.77, z: 0}
   m_LocalScale: {x: 19.09598, y: 1.7493749, z: 1.7493749}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1093,7 +1093,7 @@ Transform:
   m_GameObject: {fileID: 836501034}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.63, y: -2.4, z: 0}
+  m_LocalPosition: {x: -3.65, y: -3.43, z: 0}
   m_LocalScale: {x: 6.15, y: 6.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1180,6 +1180,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   healthBar: {fileID: 481452878}
+  healthFill: {fileID: 350457589}
   maxHealth: 100
   attackDamage: 10
   victoryScreen: {fileID: 0}
@@ -1449,7 +1450,7 @@ Transform:
   m_GameObject: {fileID: 1377272914}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.32, y: -2.51, z: 0}
+  m_LocalPosition: {x: 2.33, y: -3.37, z: 0}
   m_LocalScale: {x: 6.15, y: 6.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1619,7 +1620,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  jumpForce: 15
+  jumpForce: 5
   leftKey: 276
   rightKey: 275
   jumpKey: 273
@@ -1631,6 +1632,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   healthBar: {fileID: 747893362}
+  healthFill: {fileID: 1576344366}
   maxHealth: 100
   attackDamage: 10
   victoryScreen: {fileID: 0}
@@ -2116,6 +2118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   victoryScreen: {fileID: 651139441}
   victoryText: {fileID: 294065762}
+  gameEnded: 0
 --- !u!4 &1986076921
 Transform:
   m_ObjectHideFlags: 0
