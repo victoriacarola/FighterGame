@@ -1,3 +1,11 @@
+// =============================================================================
+// PlayerController.cs
+// Created by: Victoriacarola
+// Date: 11.11.2025
+// Description: Manages game state, victory conditions, and scene management,
+// =============================================================================
+
+
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -11,7 +19,7 @@ public class GameManager : MonoBehaviour
     public GameObject victoryScreen;
     public TMP_Text victoryText;
     
-    public bool gameEnded = false; 
+    public bool gameEnded = false;
 
     void Awake()
     {
@@ -25,6 +33,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// Hide victory screen
     void Start()
     {
         if (victoryScreen != null)
@@ -33,7 +42,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // SHows the Victoryscreen
+    // Shows the Victoryscreen when Player dies 
     public void ShowVictory(string winnerName)
     {
         if (gameEnded)
@@ -49,7 +58,6 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
-
         if (victoryText == null)
         {
             return;
@@ -59,6 +67,7 @@ public class GameManager : MonoBehaviour
         victoryScreen.SetActive(true);
     }
 
+    // Freezes all players by disabeling their movement and input
     void FreezeAllPlayers()
     {
         // Find and freeze all players

@@ -1,3 +1,13 @@
+// =============================================================================
+// PlayerController.cs
+// Created by: Victoriacarola
+// Date: 11.11.2025
+// Description: Handles player movement, combat and health display 
+//              for a 2D fighting game with two players.
+// =============================================================================
+
+
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,10 +31,13 @@ public class PlayerController : MonoBehaviour
     private int currentHealth;
     private Vector3 originalScale;
 
+    // Initialize components and set up initial "starting"- state
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         originalScale = transform.localScale;
+
+        // Initialize health
         currentHealth = maxHealth;
         if (healthBar != null) healthBar.value = 1f;
         
@@ -41,11 +54,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Main game loop - handles input and character state
     void Update()
     {
         if (isDead) return;
 
-        //Ground
+        // Ground
         isGrounded = transform.position.y <= 0.5f;
 
         // Movement
@@ -73,7 +87,7 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
 
-        // Attack - Simple Attack
+        // triggers Attack Animation
         if (Input.GetKeyDown(attackKey))
         {
             animator.SetTrigger("Attack");
@@ -81,12 +95,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Performs Attack01
     void SimpleAttack()
     {
         if (attackPoint == null) return;
-        
+
+        //detects Colliders whithin attack range
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
         
+        // Applies Damage to all detected enemies
         foreach(Collider2D hit in hits)
         {
             if (hit.gameObject != gameObject)
@@ -100,21 +117,23 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Applies damage to character and triggers hurt animation
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        
+
         if (healthBar != null)
             healthBar.value = (float)currentHealth / maxHealth;
-        
+
         // Update health bar color
         UpdateHealthBarColor();
-            
+
         animator.SetTrigger("Hurt");
-        
+
         if (currentHealth <= 0) Die();
     }
 
+    // Define health bar color based on current health
     void UpdateHealthBarColor()
     {
         if (healthFill != null)
@@ -136,11 +155,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Ground detection
     void OnCollisionEnter2D(Collision2D collision)
     {
         isGrounded = true;
     }
 
+    // Handle player death
     void Die()
     {
         if (isDead) return; // Prevent multiple death calls
@@ -148,7 +169,7 @@ public class PlayerController : MonoBehaviour
         isDead = true;
         animator.SetTrigger("Die");
         
-        // Tell GameManager who won
+        // Announces winner
         string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";        
         GameManager.instance.ShowVictory(winnerName);
     }
