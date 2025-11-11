@@ -18,7 +18,6 @@ public class GameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            Debug.Log("GameManager instance created");
         }
         else
         {
@@ -31,22 +30,14 @@ public class GameManager : MonoBehaviour
         if (victoryScreen != null)
         {
             victoryScreen.SetActive(false);
-            Debug.Log("Victory screen hidden at start");
-        }
-        else
-        {
-            Debug.LogError("Victory screen not assigned!");
         }
     }
 
     // SHows the Victoryscreen
     public void ShowVictory(string winnerName)
     {
-        Debug.Log("ShowVictory called with winner: " + winnerName);
-
         if (gameEnded)
         {
-            Debug.Log("Game already ended, ignoring...");
             return;
         }
 
@@ -56,19 +47,16 @@ public class GameManager : MonoBehaviour
 
         if (victoryScreen == null)
         {
-            Debug.LogError("VictoryScreen is null!");
             return;
         }
 
         if (victoryText == null)
         {
-            Debug.LogError("VictoryText is null!");
             return;
         }
 
         victoryText.text = winnerName + " Wins!";
         victoryScreen.SetActive(true);
-        Debug.Log("VICTORY SCREEN SHOULD BE VISIBLE NOW: " + winnerName + " Wins!");
     }
 
     void FreezeAllPlayers()
@@ -87,14 +75,11 @@ public class GameManager : MonoBehaviour
             
             // Disable input
             player.enabled = false;
-            
-            Debug.Log("Froze player: " + player.gameObject.name);
         }
     }
 
     public void RestartGame()
     {
-        Debug.Log("Restarting game...");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

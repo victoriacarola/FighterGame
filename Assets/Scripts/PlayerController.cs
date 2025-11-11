@@ -21,10 +21,6 @@ public class PlayerController : MonoBehaviour
     private int currentHealth;
     private Vector3 originalScale;
 
-    [Header("Victory Screen")]
-    public GameObject victoryScreen;
-    public UnityEngine.UI.Text victoryText;
-
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -32,7 +28,6 @@ public class PlayerController : MonoBehaviour
         currentHealth = maxHealth;
         if (healthBar != null) healthBar.value = 1f;
         
-       
         UpdateHealthBarColor();
         
         GameObject restartBtn = GameObject.Find("RestartButton");
@@ -82,8 +77,6 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(attackKey))
         {
             animator.SetTrigger("Attack");
-            Debug.Log(gameObject.name + " attacking!");
-            
             SimpleAttack();
         }
     }
@@ -93,7 +86,6 @@ public class PlayerController : MonoBehaviour
         if (attackPoint == null) return;
         
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
-        Debug.Log(gameObject.name + " found " + hits.Length + " targets");
         
         foreach(Collider2D hit in hits)
         {
@@ -102,7 +94,6 @@ public class PlayerController : MonoBehaviour
                 PlayerController enemy = hit.GetComponent<PlayerController>();
                 if (enemy != null)
                 {
-                    Debug.Log(gameObject.name + " HIT " + hit.name + "!");
                     enemy.TakeDamage(attackDamage);
                 }
             }
@@ -112,7 +103,6 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        Debug.Log(gameObject.name + " took " + damage + " damage! Health: " + currentHealth);
         
         if (healthBar != null)
             healthBar.value = (float)currentHealth / maxHealth;
@@ -157,21 +147,9 @@ public class PlayerController : MonoBehaviour
         
         isDead = true;
         animator.SetTrigger("Die");
-        Debug.Log(gameObject.name + " died!");
-        
-        // Debug GameManager
-        if (GameManager.instance == null)
-        {
-            Debug.LogError("GameManager instance is NULL!");
-            return;
-        }
-        
-        Debug.Log("GameManager found, calling ShowVictory...");
         
         // Tell GameManager who won
-        string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";
-        Debug.Log("Winner should be: " + winnerName);
-        
+        string winnerName = (gameObject.name == "Orc") ? "Soldier" : "Orc";        
         GameManager.instance.ShowVictory(winnerName);
     }
 
