@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public GameObject victoryScreen;
     public TMP_Text victoryText;
     
-    public bool gameEnded = false; // Changed to public so PlayerController can check it
+    public bool gameEnded = false; 
 
     void Awake()
     {
@@ -39,33 +39,33 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // SHows the Victoryscreen
     public void ShowVictory(string winnerName)
     {
         Debug.Log("ShowVictory called with winner: " + winnerName);
-        
-        if (gameEnded) 
+
+        if (gameEnded)
         {
             Debug.Log("Game already ended, ignoring...");
             return;
         }
-        
+
         gameEnded = true;
-        
-        // Freeze both characters
+
         FreezeAllPlayers();
-        
+
         if (victoryScreen == null)
         {
             Debug.LogError("VictoryScreen is null!");
             return;
         }
-        
+
         if (victoryText == null)
         {
             Debug.LogError("VictoryText is null!");
             return;
         }
-        
+
         victoryText.text = winnerName + " Wins!";
         victoryScreen.SetActive(true);
         Debug.Log("VICTORY SCREEN SHOULD BE VISIBLE NOW: " + winnerName + " Wins!");

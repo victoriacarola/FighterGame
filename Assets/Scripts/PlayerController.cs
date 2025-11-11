@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     public float attackRange = 1.5f;
     public LayerMask enemyLayers;
     public Slider healthBar;
-    public Image healthFill; // Add this field for the fill color
+    public Image healthFill; 
     public int maxHealth = 100;
     public int attackDamage = 20;
 
@@ -32,10 +32,9 @@ public class PlayerController : MonoBehaviour
         currentHealth = maxHealth;
         if (healthBar != null) healthBar.value = 1f;
         
-        // Set initial health bar color
+       
         UpdateHealthBarColor();
         
-        // Auto-connect restart button if not set up in inspector
         GameObject restartBtn = GameObject.Find("RestartButton");
         if (restartBtn != null)
         {
@@ -51,7 +50,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isDead) return;
 
-        // Ground check
+        //Ground
         isGrounded = transform.position.y <= 0.5f;
 
         // Movement
@@ -79,13 +78,12 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
 
-        // Attack - SIMPLE VERSION
+        // Attack - Simple Attack
         if (Input.GetKeyDown(attackKey))
         {
             animator.SetTrigger("Attack");
             Debug.Log(gameObject.name + " attacking!");
             
-            // Immediate attack for testing
             SimpleAttack();
         }
     }
